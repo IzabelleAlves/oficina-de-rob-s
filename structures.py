@@ -2,6 +2,8 @@
 Módulo de estruturas de dados manuais
 Implementa lista encadeada para robôs e pilha encadeada para componentes
 """
+import random
+import string
 
 
 class Node:
@@ -9,6 +11,32 @@ class Node:
     def __init__(self, data):
         self.data = data
         self.next = None
+
+
+# --- CLASSE COMPONENT (Adicionada/Corrigida para Alfanumérico) ---
+class Component:
+    """Representa um único componente com falha em um robô."""
+    
+    def __init__(self, name: str):
+        self.name = name
+        # A geração agora usa caracteres alfanuméricos
+        self.replacement_code = self._generate_alphanumeric_code(4) 
+
+    def _generate_alphanumeric_code(self, length: int) -> str:
+        """
+        Gera uma string alfanumérica aleatória (letras maiúsculas e dígitos).
+        Ex: 'A8Z4' ou '123B'
+        """
+        # Combina todas as letras maiúsculas (A-Z) e todos os dígitos (0-9)
+        characters = string.ascii_uppercase + string.digits
+        return ''.join(random.choice(characters) for _ in range(length))
+
+    def __str__(self):
+        return f"{self.name} (Code: {self.replacement_code})"
+    
+    def __repr__(self):
+        return f"Component('{self.name}', '{self.replacement_code}')"
+# -----------------------------------------------------------------
 
 
 class ComponentStack:
@@ -119,30 +147,33 @@ class RobotLinkedList:
         while current is not None:
             robots.append(current.data)
             current = current.next
+            
         return robots
     
     def sort_by_priority(self):
         """
         Ordena a lista por prioridade (emergência > padrão > baixo risco)
         Usa algoritmo de ordenação por inserção
+        (Converte a lista encadeada para array para ordenar e reconstrói)
         """
         if self.head is None or self.head.next is None:
             return
         
-        # Converte para lista Python temporária para facilitar ordenação
         robots = self.get_all()
+        # Mapeamento de prioridade para valores numéricos
         priority_order = {"emergência": 0, "padrão": 1, "baixo risco": 2}
         
-        # Ordenação por inserção
+        # Algoritmo de Ordenação por Inserção no Array
         for i in range(1, len(robots)):
             key = robots[i]
             j = i - 1
+            # Compara usando o valor numérico da prioridade
             while j >= 0 and priority_order[robots[j].priority] > priority_order[key.priority]:
                 robots[j + 1] = robots[j]
                 j -= 1
             robots[j + 1] = key
         
-        # Reconstrói a lista encadeada
+        # Reconstrói a lista encadeada com a nova ordem
         self.head = None
         self.size = 0
         for robot in robots:
@@ -155,4 +186,3 @@ class RobotLinkedList:
     def __len__(self):
         """Retorna o tamanho da lista"""
         return self.size
-
